@@ -8,6 +8,12 @@ custom-tokenizer-js-genai/
 ├── README.md           # This documentation file
 └── demo_corpus.txt     # A sample text corpus for vocabulary learning
 
+## Demo Screenshot
+
+Here's a look at the Custom Tokenizer JS in action:
+
+![Custom Tokenizer JS Demo](demo-screenshot.png)
+
 Features
 Custom Tokenizer Class: A Tokenizer class written from scratch in tokenizer.js.
 
