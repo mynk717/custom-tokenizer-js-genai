@@ -12,7 +12,7 @@ custom-tokenizer-js-genai/
 
 Here's a look at the Custom Tokenizer JS in action:
 
-![Custom Tokenizer JS Demo](demo-screenshot.png)
+![Custom Tokenizer JS Demo](demo-screenshot.PNG)
 
 Features
 Custom Tokenizer Class: A Tokenizer class written from scratch in tokenizer.js.
