@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Tokenizer</title>
+    <!-- Tailwind CSS CDN for quick styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1rem; /* Rounded corners */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 900px;
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+        }
+        button {
+            transition: background-color 0.2s, transform 0.1s;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            transform: translateY(-1px);
+        }
+        .primary-btn {
+            background-image: linear-gradient(to right, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+        }
+        .primary-btn:hover {
+            background-image: linear-gradient(to right, #4f46e5, #7c3aed);
+        }
+        .secondary-btn {
+            background-color: #e5e7eb;
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+        }
+        .secondary-btn:hover {
+            background-color: #d1d5db;
+        }
+        .message-box {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            display: none; /* Hidden by default */
+        }
+        .message-box.success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .message-box.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .message-box.info {
+            background-color: #e0f2fe;
+            color: #0284c7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">✨ Custom Tokenizer Demo ✨</h1>
+
+        <!-- Instructions Section -->
+        <div class="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h2 class="text-xl font-semibold text-blue-800 mb-2">Instructions</h2>
+            <ul class="list-disc list-inside text-gray-700">
+                <li><strong>1. Learn Vocabulary:</strong> Load or paste your demo corpus into the "Corpus for Vocabulary Learning" area and click "Learn Vocabulary". This will build the tokenizer's vocabulary.</li>
+                <li><strong>2. Encode Text:</strong> Type or paste text into the "Text to Encode" area and click "Encode Text". The token IDs will appear below.</li>
+                <li><strong>3. Decode Tokens:</strong> Paste token IDs (comma-separated numbers) into the "Token IDs to Decode" area and click "Decode Tokens". The original text will be reconstructed.</li>
+                <li>Your vocabulary is saved in your browser's local storage.</li>
+            </ul>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Corpus Input -->
+            <div>
+                <label for="corpusInput" class="block text-gray-700 font-medium mb-2">Corpus for Vocabulary Learning</label>
+                <textarea id="corpusInput" class="w-full border focus:ring-indigo-500 focus:border-indigo-500" placeholder="Paste your text corpus here or it will be pre-filled from demo_corpus.txt"></textarea>
+                <button id="learnVocabBtn" class="primary-btn w-full mt-4">Learn Vocabulary</button>
+            </div>
+
+            <!-- Text to Encode -->
+            <div>
+                <label for="textToEncodeInput" class="block text-gray-700 font-medium mb-2">Text to Encode</label>
+                <textarea id="textToEncodeInput" class="w-full border focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter text to encode"></textarea>
+                <button id="encodeTextBtn" class="primary-btn w-full mt-4">Encode Text</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <!-- Encoded Tokens Output -->
+            <div>
+                <label for="encodedTokensOutput" class="block text-gray-700 font-medium mb-2">Encoded Tokens (IDs)</label>
+                <textarea id="encodedTokensOutput" class="w-full border bg-gray-50 cursor-not-allowed" readonly></textarea>
+            </div>
+
+            <!-- Token IDs to Decode -->
+            <div>
+                <label for="tokensToDecodeInput" class="block text-gray-700 font-medium mb-2">Token IDs to Decode (comma-separated)</label>
+                <textarea id="tokensToDecodeInput" class="w-full border focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter comma-separated token IDs to decode"></textarea>
+                <button id="decodeTokensBtn" class="primary-btn w-full mt-4">Decode Tokens</button>
+            </div>
+        </div>
+
+        <!-- Decoded Text Output -->
+        <div class="mt-6">
+            <label for="decodedTextOutput" class="block text-gray-700 font-medium mb-2">Decoded Text</label>
+            <textarea id="decodedTextOutput" class="w-full border bg-gray-50 cursor-not-allowed" readonly></textarea>
+        </div>
+
+        <!-- Vocabulary Info & Message Box -->
+        <div class="mt-6 text-center">
+            <p class="text-lg font-semibold text-gray-800">Current Vocabulary Size: <span id="vocabSizeDisplay" class="text-indigo-600">0</span></p>
+            <div id="messageBox" class="message-box"></div>
+        </div>
+    </div>
+
+    <!-- Link to your tokenizer.js file -->
+    <script src="tokenizer.js"></script>
+    <script>
+        // --- DOM Elements and Event Listeners (remains in index.html for UI interaction) ---
+        const corpusInput = document.getElementById('corpusInput');
+        const learnVocabBtn = document.getElementById('learnVocabBtn');
+        const textToEncodeInput = document.getElementById('textToEncodeInput');
+        const encodeTextBtn = document.getElementById('encodeTextBtn');
+        const encodedTokensOutput = document.getElementById('encodedTokensOutput');
+        const tokensToDecodeInput = document.getElementById('tokensToDecodeInput');
+        const decodeTokensBtn = document.getElementById('decodeTokensBtn');
+        const decodedTextOutput = document.getElementById('decodedTextOutput');
+        const vocabSizeDisplay = document.getElementById('vocabSizeDisplay');
+        const messageBox = document.getElementById('messageBox');
+
+        // Initialize tokenizer instance (from tokenizer.js)
+        const tokenizer = new Tokenizer();
+
+        /**
+         * Displays a temporary message to the user.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success', 'error', or 'info' for styling.
+         */
+        function showMessage(message, type) {
+            messageBox.textContent = message;
+            messageBox.className = `message-box ${type}`; // Reset classes and add new type
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 5000); // Hide after 5 seconds
+        }
+
+        /**
+         * Updates the displayed vocabulary size.
+         */
+        function updateVocabSizeDisplay() {
+            vocabSizeDisplay.textContent = tokenizer.getVocabSize();
+        }
+
+        // --- Event Handlers ---
+
+        learnVocabBtn.addEventListener('click', () => {
+            const corpus = corpusInput.value.trim();
+            if (corpus) {
+                tokenizer.learnVocab(corpus);
+                updateVocabSizeDisplay();
+                showMessage('Vocabulary learned and saved! 😊', 'success');
+            } else {
+                showMessage('Please provide some text to learn vocabulary from.', 'info');
+            }
+        });
+
+        encodeTextBtn.addEventListener('click', () => {
+            const text = textToEncodeInput.value.trim();
+            if (text) {
+                if (tokenizer.getVocabSize() <= Object.keys(Tokenizer.SPECIAL_TOKENS).length) {
+                    showMessage('Please learn a vocabulary first before encoding! 🙏', 'info');
+                    return;
+                }
+                const encoded = tokenizer.encode(text);
+                encodedTokensOutput.value = encoded.join(', ');
+                tokensToDecodeInput.value = encoded.join(', '); // Pre-fill for easy decoding
+                showMessage('Text encoded successfully! 🚀', 'success');
+            } else {
+                showMessage('Please enter text to encode.', 'info');
+            }
+        });
+
+        decodeTokensBtn.addEventListener('click', () => {
+            const tokenIdsString = tokensToDecodeInput.value.trim();
+            if (tokenIdsString) {
+                if (tokenizer.getVocabSize() <= Object.keys(Tokenizer.SPECIAL_TOKENS).length) {
+                    showMessage('Please learn a vocabulary first or load existing one before decoding! 🙏', 'info');
+                    return;
+                }
+                try {
+                    const tokenIds = tokenIdsString.split(',').map(id => parseInt(id.trim(), 10)).filter(id => !isNaN(id));
+                    if (tokenIds.length === 0) {
+                        showMessage('No valid token IDs found in input. Please enter comma-separated numbers.', 'error');
+                        return;
+                    }
+                    const decoded = tokenizer.decode(tokenIds);
+                    decodedTextOutput.value = decoded;
+                    showMessage('Tokens decoded successfully! 🎉', 'success');
+                } catch (e) {
+                    console.error('Error decoding tokens:', e);
+                    showMessage('Error: Invalid token ID format. Please use comma-separated numbers.', 'error');
+                }
+            } else {
+                showMessage('Please enter token IDs to decode.', 'info');
+            }
+        });
+
+        // --- Initial Load ---
+        window.addEventListener('load', () => {
+            // Load corpus from demo_corpus.txt
+            fetch('demo_corpus.txt')
+                .then(response => response.text())
+                .then(text => {
+                    corpusInput.value = text;
+                    // Attempt to load vocab on page load, if successful, show a message
+                    if (tokenizer.getVocabSize() > Object.keys(Tokenizer.SPECIAL_TOKENS).length) {
+                        showMessage(`Vocabulary with ${tokenizer.getVocabSize()} tokens loaded from localStorage.`, 'info');
+                    } else {
+                        showMessage('No existing vocabulary found. Please learn a new one. 🤔', 'info');
+                    }
+                    updateVocabSizeDisplay(); // Update display after potential load
+                })
+                .catch(error => {
+                    console.error('Error loading demo_corpus.txt:', error);
+                    showMessage('Error loading demo corpus. Please paste text manually. ⚠️', 'error');
+                    updateVocabSizeDisplay(); // Still update display even if corpus load fails
+                });
+        });
+    </script>
+</body>
+</html>
